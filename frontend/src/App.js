@@ -167,11 +167,11 @@ function App() {
   const getSentimentEmoji = (sentiment) => {
     switch (sentiment) {
       case "positive":
-        return "😊";
+        return "";
       case "negative":
-        return "😞";
+        return "";
       default:
-        return "😐";
+        return "";
     }
   };
 
