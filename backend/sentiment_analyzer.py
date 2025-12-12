@@ -7,10 +7,13 @@ load_dotenv()
 class SentimentAnalyzer:
     def __init__(self):
         # Using multilingual model that supports Indonesian, English, and many other languages
+        hf_token = os.getenv('HUGGINGFACE_API_KEY')
+        
         try:
             self.analyzer = pipeline(
                 "sentiment-analysis",
                 model="nlptown/bert-base-multilingual-uncased-sentiment",
+                token=hf_token if hf_token else None,
                 device=-1  # Use CPU explicitly to avoid meta tensor issues
             )
             print("Loaded multilingual sentiment analyzer (supports Indonesian)")
@@ -21,6 +24,7 @@ class SentimentAnalyzer:
                 self.analyzer = pipeline(
                     "sentiment-analysis",
                     model="distilbert-base-uncased-finetuned-sst-2-english",
+                    token=hf_token if hf_token else None,
                     device=-1
                 )
                 print("Loaded English sentiment analyzer (fallback)")

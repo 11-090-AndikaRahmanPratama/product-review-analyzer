@@ -33,7 +33,7 @@ function App() {
     e.preventDefault();
 
     if (reviewText.trim().length < 10) {
-      setError("Review must be at least 10 characters long");
+      setError("Review harus minimal 10 karakter");
       return;
     }
 
@@ -52,9 +52,7 @@ function App() {
       // Refresh reviews list
       fetchReviews();
     } catch (err) {
-      setError(
-        err.response?.data?.error || "An error occurred during analysis"
-      );
+      setError(err.response?.data?.error || "Terjadi error saat analisis");
     } finally {
       setLoading(false);
     }
@@ -85,24 +83,24 @@ function App() {
   return (
     <div className="app-container">
       <header className="header">
-        <h1>🔍 Product Review Analyzer</h1>
-        <p>Analyze sentiment and extract key insights from product reviews</p>
+        <h1>Analisis Review Produk</h1>
+        <p>Analisis sentimen dan ekstrak insight penting dari review produk</p>
       </header>
 
       <main className="main-content">
         {/* Analysis Form */}
         <section className="form-section">
-          <h2>Submit a Review</h2>
+          <h2>Kirim Review</h2>
           <form onSubmit={handleSubmit}>
             <textarea
               value={reviewText}
               onChange={(e) => setReviewText(e.target.value)}
-              placeholder="Enter your product review here... (minimum 10 characters)"
+              placeholder="Masukkan review produk Anda di sini... (minimal 10 karakter)"
               rows="6"
               disabled={loading}
             />
             <button type="submit" disabled={loading}>
-              {loading ? "Analyzing..." : "Analyze Review"}
+              {loading ? "Menganalisis..." : "Analisis Review"}
             </button>
           </form>
 
@@ -112,29 +110,33 @@ function App() {
         {/* Analysis Result */}
         {result && (
           <section className="result-section">
-            <h2>Analysis Result</h2>
+            <h2>Hasil Analisis</h2>
             <div className="sentiment-box">
-              <h3>Sentiment Analysis</h3>
+              <h3>Analisis Sentimen</h3>
               <div className="sentiment-display">
                 <span className="emoji">
                   {getSentimentEmoji(result.sentiment)}
                 </span>
                 <span className="sentiment-label">
-                  {result.sentiment.toUpperCase()}
+                  {result.sentiment === "positive"
+                    ? "POSITIF"
+                    : result.sentiment === "negative"
+                    ? "NEGATIF"
+                    : "NETRAL"}
                 </span>
               </div>
               <div className="confidence">
-                Confidence: {(result.confidence_score * 100).toFixed(2)}%
+                Kepercayaan: {(result.confidence_score * 100).toFixed(2)}%
               </div>
             </div>
 
             <div className="key-points-box">
-              <h3>Key Points</h3>
+              <h3>Poin Penting</h3>
               <div className="key-points-content">{result.key_points}</div>
             </div>
 
             <div className="review-text-box">
-              <h3>Review Text</h3>
+              <h3>Teks Review</h3>
               <p>{result.review_text}</p>
             </div>
           </section>
@@ -142,11 +144,11 @@ function App() {
 
         {/* Previous Reviews */}
         <section className="reviews-section">
-          <h2>Previous Reviews ({reviews.length})</h2>
+          <h2>Review Sebelumnya ({reviews.length})</h2>
           {loadingReviews ? (
-            <p>Loading reviews...</p>
+            <p>Memuat reviews...</p>
           ) : reviews.length === 0 ? (
-            <p>No reviews yet. Be the first to submit one!</p>
+            <p>Belum ada review. Jadilah yang pertama!</p>
           ) : (
             <div className="reviews-list">
               {reviews.map((review) => (

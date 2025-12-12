@@ -45,7 +45,7 @@ def analyze_review(request):
         except Exception as e:
             logger.error(f"Failed to parse JSON: {e}")
             return Response(
-                json.dumps({'error': 'Invalid JSON in request body'}),
+                json.dumps({'error': 'Format JSON tidak valid'}),
                 status=400,
                 content_type='application/json; charset=utf-8'
             )
@@ -55,14 +55,14 @@ def analyze_review(request):
         
         if not review_text:
             return Response(
-                json.dumps({'error': 'Review text is required'}),
+                json.dumps({'error': 'Teks review wajib diisi'}),
                 status=400,
                 content_type='application/json; charset=utf-8'
             )
         
         if len(review_text) < 10:
             return Response(
-                json.dumps({'error': 'Review text too short (minimum 10 characters)'}),
+                json.dumps({'error': 'Teks review terlalu pendek (minimal 10 karakter)'}),
                 status=400,
                 content_type='application/json; charset=utf-8'
             )
@@ -77,7 +77,7 @@ def analyze_review(request):
             logger.error(f"Sentiment analysis failed: {e}")
             logger.error(traceback.format_exc())
             return Response(
-                json.dumps({'error': 'Sentiment analysis failed. Please try again.'}),
+                json.dumps({'error': 'Analisis sentimen gagal. Coba lagi.'}),
                 status=500,
                 content_type='application/json; charset=utf-8'
             )
@@ -118,7 +118,7 @@ def analyze_review(request):
             logger.error(f"Database error: {e}")
             logger.error(traceback.format_exc())
             return Response(
-                json.dumps({'error': 'Failed to save review to database'}),
+                json.dumps({'error': 'Gagal menyimpan review ke database'}),
                 status=500,
                 content_type='application/json; charset=utf-8'
             )
@@ -127,7 +127,7 @@ def analyze_review(request):
         logger.error(f"Unexpected error in analyze_review: {e}")
         logger.error(traceback.format_exc())
         return Response(
-            json.dumps({'error': 'Internal server error. Please try again.'}),
+            json.dumps({'error': 'Error server. Coba lagi nanti.'}),
             status=500,
             content_type='application/json; charset=utf-8'
         )
@@ -154,7 +154,7 @@ def get_reviews(request):
         logger.error(f"Error in get_reviews: {e}")
         logger.error(traceback.format_exc())
         return Response(
-            json.dumps({'error': 'Failed to fetch reviews'}),
+            json.dumps({'error': 'Gagal mengambil data reviews'}),
             status=500,
             content_type='application/json; charset=utf-8'
         )

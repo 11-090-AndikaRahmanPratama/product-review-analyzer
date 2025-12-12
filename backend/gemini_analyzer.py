@@ -21,15 +21,16 @@ class GeminiAnalyzer:
     def extract_key_points(self, review_text):
         """
         Extract key points from review using Gemini
-        Returns: string with bullet points
+        Returns: string with bullet points in Indonesian
         """
         try:
-            prompt = f"""Analyze this product review and extract 3-5 key points in bullet points.
-Be concise and focus on the most important aspects mentioned.
+            prompt = f"""Analisis review produk ini dan ekstrak 3-5 poin penting dalam bentuk bullet points.
+Singkat dan fokus pada aspek-aspek paling penting yang disebutkan.
 
 Review: {review_text}
 
-Format your response as bullet points (use - for bullets)."""
+Format respons sebagai bullet points (gunakan - untuk bullets). 
+PENTING: Jawab dalam Bahasa Indonesia!"""
             
             logger.info("Sending request to Gemini API...")
             response = self.model.generate_content(prompt)
@@ -38,4 +39,4 @@ Format your response as bullet points (use - for bullets)."""
             
         except Exception as e:
             logger.error(f"Gemini analysis error: {e}", exc_info=True)
-            return "- Unable to extract key points at this time"
+            return "- Tidak bisa ekstrak poin penting saat ini"
