@@ -18,25 +18,33 @@ class GeminiAnalyzer:
         self.model = genai.GenerativeModel('gemini-2.5-flash')
         logger.info("Gemini analyzer initialized successfully with gemini-2.5-flash")
     
-    def extract_key_points(self, review_text):
+    def extract_key_points(self, review_text, language='id'):
         """
         Extract key points from review using Gemini
-        Returns: string with bullet points in Indonesian
+        `language` can be 'id' or 'en'
+        Returns: string with bullet points in requested language
         """
         try:
-            prompt = f"""Analisis review produk ini dan ekstrak 3-5 poin penting dalam bentuk bullet points.
+            if language == 'en':
+                prompt = f"""Analyze this product review and extract 3-5 key points in bullet points.
+Be concise and focus on the most important aspects mentioned.
+
+Review: {review_text}
+
+Format your response as bullet points (use - for bullets). IMPORTANT: Answer in English."""
+            else:
+                prompt = f"""Analisis review produk ini dan ekstrak 3-5 poin penting dalam bentuk bullet points.
 Singkat dan fokus pada aspek-aspek paling penting yang disebutkan.
 
 Review: {review_text}
 
-Format respons sebagai bullet points (gunakan - untuk bullets). 
-PENTING: Jawab dalam Bahasa Indonesia!"""
-            
+Format respons sebagai bullet points (gunakan - untuk bullets). PENTING: Jawab dalam Bahasa Indonesia!"""
+
             logger.info("Sending request to Gemini API...")
             response = self.model.generate_content(prompt)
             logger.info("Gemini response received successfully")
             return response.text
-            
+
         except Exception as e:
             logger.error(f"Gemini analysis error: {e}", exc_info=True)
-            return "- Tidak bisa ekstrak poin penting saat ini"
+            return "- Unable to extract key points at this time" if language == 'en' else "- Tidak bisa ekstrak poin penting saat ini"

@@ -34,7 +34,7 @@ def get_gemini_analyzer():
 def analyze_review(request):
     """
     POST /api/analyze-review
-    Body: { "review_text": "..." }
+    Body: { "product_name": "...", "review_text": "..." }
     """
     try:
         logger.info("Received analyze request")
@@ -51,6 +51,10 @@ def analyze_review(request):
             )
         
         review_text = data.get('review_text', '').strip()
+        product_name = data.get('product_name', '').strip()
+        language = data.get('language', 'id').strip().lower()
+        if language not in ('id', 'en'):
+            language = 'id'
         logger.info(f"Review text length: {len(review_text)}")
         
         if not review_text:
@@ -86,13 +90,13 @@ def analyze_review(request):
         logger.info("Starting key points extraction...")
         try:
             gemini = get_gemini_analyzer()
-            key_points = gemini.extract_key_points(review_text)
+            key_points = gemini.extract_key_points(review_text, language=language)
             logger.info("Key points extracted successfully")
         except Exception as e:
             logger.error(f"Gemini analysis failed: {e}")
             logger.error(traceback.format_exc())
             # Continue with partial results
-            key_points = "- Unable to extract key points at this time"
+            key_points = "- Tidak bisa ekstrak poin penting saat ini" if language == 'id' else "- Unable to extract key points at this time"
         
         # Save to database
         logger.info("Saving to database...")
@@ -100,6 +104,8 @@ def analyze_review(request):
             from models import Session, Review
             session = Session()
             review = Review(
+                product_name=product_name if product_name else None,
+                language=language,
                 review_text=review_text,
                 sentiment=sentiment_result['sentiment'],
                 confidence_score=sentiment_result['confidence_score'],
