@@ -75,7 +75,7 @@ def analyze_review(request):
         logger.info("Starting sentiment analysis...")
         try:
             analyzer = get_sentiment_analyzer()
-            sentiment_result = analyzer.analyze(review_text)
+            sentiment_result = analyzer.analyze(review_text, language=language)
             logger.info(f"Sentiment: {sentiment_result}")
         except Exception as e:
             logger.error(f"Sentiment analysis failed: {e}")

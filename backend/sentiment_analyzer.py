@@ -32,34 +32,80 @@ class SentimentAnalyzer:
                 print(f"Error loading model: {e2}")
                 raise
     
-    def analyze(self, text):
+    def analyze(self, text, language='id'):
         """
         Analyze sentiment of text (supports Indonesian and other languages)
         Returns: dict with 'sentiment' and 'confidence_score'
         """
         try:
             result = self.analyzer(text[:512])[0]  # Limit to 512 chars
-            
+
+            # Log raw result for debugging
+            print(f"Raw sentiment model output: {result}")
+
             # Map different label formats from different models
-            label = result['label'].upper().strip()
-            
-            # Handle multilingual model output (5 STARS, 4 STARS, etc.)
-            if label in ['5 STARS', '5STARS', '4 STARS', '4STARS']:
-                sentiment = 'positive'
-            elif label in ['1 STAR', '1STAR', '2 STARS', '2STARS', '3 STARS', '3STARS']:
-                sentiment = 'negative' if label.startswith('1') or label.startswith('2') else 'neutral'
-            # Handle English model output (POSITIVE, NEGATIVE, NEUTRAL)
-            elif label in ['POSITIVE']:
-                sentiment = 'positive'
-            elif label in ['NEGATIVE']:
-                sentiment = 'negative'
+            label = str(result.get('label', '')).upper().strip()
+            confidence = float(result.get('score', result.get('confidence', 0.0)))
+
+            sentiment = 'neutral'
+
+            # If label contains STAR/STARS, extract numeric rating
+            if 'STAR' in label:
+                import re
+                m = re.search(r"(\d)", label)
+                if m:
+                    n = int(m.group(1))
+                    if n >= 4:
+                        sentiment = 'positive'
+                    elif n == 3:
+                        sentiment = 'neutral'
+                    else:
+                        sentiment = 'negative'
+                else:
+                    # fallback to previous heuristics
+                    if '5' in label or '4' in label:
+                        sentiment = 'positive'
+                    elif '1' in label or '2' in label:
+                        sentiment = 'negative'
+                    else:
+                        sentiment = 'neutral'
             else:
-                sentiment = 'neutral'
-            
-            confidence = result['score']
-            
+                # Handle English model output (POSITIVE, NEGATIVE, NEUTRAL)
+                if 'POSITIVE' in label:
+                    sentiment = 'positive'
+                elif 'NEGATIVE' in label:
+                    sentiment = 'negative'
+                elif 'NEUTRAL' in label:
+                    sentiment = 'neutral'
+                else:
+                    sentiment = 'neutral'
+
             print(f"Label: {label}, Sentiment: {sentiment}, Score: {confidence}")
-            
+
+            # If model confidence is low, apply a simple heuristic (keyword-based)
+            try:
+                if confidence < 0.6:
+                    text_low = text.lower()
+                    if language == 'id':
+                        pos_words = ['bagus', 'puas', 'suka', 'mantap', 'tidak menyesal', 'bagus sekali', 'rekomendasi']
+                        neg_words = ['buruk', 'kecewa', 'menyesal', 'tidak puas', 'jelek']
+                    else:
+                        pos_words = ['good', 'great', 'satisfied', 'happy', 'recommend']
+                        neg_words = ['bad', 'poor', 'disappointed', 'regret', 'not satisfied']
+
+                    pos_count = sum(1 for w in pos_words if w in text_low)
+                    neg_count = sum(1 for w in neg_words if w in text_low)
+                    if pos_count > neg_count:
+                        print(f"Heuristic override to positive (pos_count={pos_count}, neg_count={neg_count})")
+                        sentiment = 'positive'
+                        confidence = max(confidence, 0.75)
+                    elif neg_count > pos_count:
+                        print(f"Heuristic override to negative (pos_count={pos_count}, neg_count={neg_count})")
+                        sentiment = 'negative'
+                        confidence = max(confidence, 0.6)
+            except Exception as e:
+                print(f"Heuristic override error: {e}")
+
             return {
                 'sentiment': sentiment,
                 'confidence_score': round(confidence, 4)

@@ -16,6 +16,90 @@ function App() {
     }
   });
   const [loading, setLoading] = useState(false);
+  // Translations for UI
+  const translations = {
+    id: {
+      title: "Analisis Review Produk",
+      subtitle:
+        "Analisis sentimen dan ekstrak insight penting dari review produk",
+      sendReview: "Kirim Review",
+      productNamePlaceholder: "Nama produk",
+      reviewPlaceholder:
+        "Masukkan review produk Anda di sini... (minimal 10 karakter)",
+      analyzing: "Menganalisis...",
+      analyzeButton: "Analisis Review",
+      minReviewError: "Review harus minimal 10 karakter",
+      analysisError: "Terjadi error saat analisis",
+      sentimentAnalysis: "Analisis Sentimen",
+      keyPoints: "Poin Penting",
+      reviewText: "Teks Review",
+      previousReviews: "Review Sebelumnya",
+      loadingReviews: "Memuat reviews...",
+      noReviews: "Belum ada review. Jadilah yang pertama!",
+      productLabel: "Produk",
+      languageLabel: "Bahasa",
+      resultTitle: "Hasil Analisis",
+      confidence: "Kepercayaan",
+      errorPrefix: "Error:",
+      positive: "POSITIF",
+      negative: "NEGATIF",
+      neutral: "NETRAL",
+      toggleTheme: "Ganti tema",
+    },
+    en: {
+      title: "Product Review Analyzer",
+      subtitle:
+        "Sentiment analysis and extract important insights from product reviews",
+      sendReview: "Submit Review",
+      productNamePlaceholder: "Product name",
+      reviewPlaceholder:
+        "Enter your product review here... (min 10 characters)",
+      analyzing: "Analyzing...",
+      analyzeButton: "Analyze Review",
+      minReviewError: "Review must be at least 10 characters",
+      analysisError: "An error occurred while analyzing",
+      sentimentAnalysis: "Sentiment Analysis",
+      keyPoints: "Key Points",
+      reviewText: "Review Text",
+      previousReviews: "Previous Reviews",
+      loadingReviews: "Loading reviews...",
+      noReviews: "No reviews yet. Be the first!",
+      productLabel: "Product",
+      languageLabel: "Language",
+      resultTitle: "Analysis Result",
+      confidence: "Confidence",
+      errorPrefix: "Error:",
+      positive: "POSITIVE",
+      negative: "NEGATIVE",
+      neutral: "NEUTRAL",
+      toggleTheme: "Toggle theme",
+    },
+  };
+
+  const t = (key) =>
+    translations[language] && translations[language][key]
+      ? translations[language][key]
+      : translations["id"][key];
+
+  // persist language selection
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("language");
+      if (saved) setLanguage(saved);
+    } catch (e) {}
+  }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("language", language);
+    } catch (e) {}
+  }, [language]);
+  useEffect(() => {
+    try {
+      document.body.classList.toggle("dark", darkMode);
+      localStorage.setItem("theme", darkMode ? "dark" : "light");
+    } catch (e) {}
+  }, [darkMode]);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
   const [reviews, setReviews] = useState([]);
@@ -42,7 +126,7 @@ function App() {
     e.preventDefault();
 
     if (reviewText.trim().length < 10) {
-      setError("Review harus minimal 10 karakter");
+      setError(t("minReviewError"));
       return;
     }
 
@@ -63,7 +147,7 @@ function App() {
       // Refresh reviews list
       fetchReviews();
     } catch (err) {
-      setError(err.response?.data?.error || "Terjadi error saat analisis");
+      setError(err.response?.data?.error || t("analysisError"));
     } finally {
       setLoading(false);
     }
@@ -91,21 +175,25 @@ function App() {
     }
   };
 
+  const translateSentimentLabel = (sentiment) => {
+    if (sentiment === "positive") return t("positive");
+    if (sentiment === "negative") return t("negative");
+    return t("neutral");
+  };
+
   return (
     <div className={`app-container ${darkMode ? "dark" : ""}`}>
       <header className="header">
         <div className="header-inner">
           <div>
-            <h1>Analisis Review Produk</h1>
-            <p>
-              Analisis sentimen dan ekstrak insight penting dari review produk
-            </p>
+            <h1>{t("title")}</h1>
+            <p>{t("subtitle")}</p>
           </div>
           <div className="header-controls">
             <select
               value={language}
               onChange={(e) => setLanguage(e.target.value)}
-              aria-label="Pilih bahasa"
+              aria-label={t("languageLabel")}
             >
               <option value="id">Bahasa Indonesia</option>
               <option value="en">English</option>
@@ -120,7 +208,7 @@ function App() {
                 } catch (e) {}
                 document.body.classList.toggle("dark", next);
               }}
-              aria-label="Toggle dark mode"
+              aria-label={t("toggleTheme")}
             >
               {darkMode ? "☀️" : "🌙"}
             </button>
@@ -131,73 +219,67 @@ function App() {
       <main className="main-content">
         {/* Analysis Form */}
         <section className="form-section">
-          <h2>Kirim Review</h2>
+          <h2>{t("sendReview")}</h2>
           <form onSubmit={handleSubmit}>
             <input
               type="text"
               value={productName}
               onChange={(e) => setProductName(e.target.value)}
-              placeholder="Nama produk"
+              placeholder={t("productNamePlaceholder")}
               disabled={loading}
             />
-            <select
-              value={language}
-              onChange={(e) => setLanguage(e.target.value)}
-              disabled={loading}
-            >
-              <option value="id">Bahasa Indonesia</option>
-              <option value="en">English</option>
-            </select>
             <textarea
               value={reviewText}
               onChange={(e) => setReviewText(e.target.value)}
-              placeholder="Masukkan review produk Anda di sini... (minimal 10 karakter)"
+              placeholder={t("reviewPlaceholder")}
               rows="6"
               disabled={loading}
             />
             <button type="submit" disabled={loading}>
-              {loading ? "Menganalisis..." : "Analisis Review"}
+              {loading ? t("analyzing") : t("analyzeButton")}
             </button>
           </form>
 
-          {error && <div className="error-message">Error: {error}</div>}
+          {error && (
+            <div className="error-message">
+              {t("errorPrefix")} {error}
+            </div>
+          )}
         </section>
 
         {/* Analysis Result */}
         {result && (
           <section className="result-section">
-            <h2>Hasil Analisis</h2>
+            <h2>{t("resultTitle")}</h2>
             <div className="sentiment-box">
-              <h3>Analisis Sentimen</h3>
+              <h3>{t("sentimentAnalysis")}</h3>
               <div className="sentiment-display">
                 <span className="emoji">
                   {getSentimentEmoji(result.sentiment)}
                 </span>
                 <span className="sentiment-label">
-                  {result.sentiment === "positive"
-                    ? "POSITIF"
-                    : result.sentiment === "negative"
-                    ? "NEGATIF"
-                    : "NETRAL"}
+                  {translateSentimentLabel(result.sentiment)}
                 </span>
               </div>
               <div className="confidence">
-                Kepercayaan: {(result.confidence_score * 100).toFixed(2)}%
+                {t("confidence")}: {(result.confidence_score * 100).toFixed(2)}%
               </div>
             </div>
 
             <div className="key-points-box">
-              <h3>Poin Penting</h3>
+              <h3>{t("keyPoints")}</h3>
               <div className="key-points-content">{result.key_points}</div>
             </div>
 
             <div className="review-text-box">
-              <h3>Teks Review</h3>
+              <h3>{t("reviewText")}</h3>
               {result.product_name && (
-                <p className="product-name">Produk: {result.product_name}</p>
+                <p className="product-name">
+                  {t("productLabel")}: {result.product_name}
+                </p>
               )}
               <p className="review-language">
-                Bahasa:{" "}
+                {t("languageLabel")}:{" "}
                 {result.language === "en" ? "English" : "Bahasa Indonesia"}
               </p>
               <p>{result.review_text}</p>
@@ -207,18 +289,21 @@ function App() {
 
         {/* Previous Reviews */}
         <section className="reviews-section">
-          <h2>Review Sebelumnya ({reviews.length})</h2>
+          <h2>
+            {t("previousReviews")} ({reviews.length})
+          </h2>
           {loadingReviews ? (
-            <p>Memuat reviews...</p>
+            <p>{t("loadingReviews")}</p>
           ) : reviews.length === 0 ? (
-            <p>Belum ada review. Jadilah yang pertama!</p>
+            <p>{t("noReviews")}</p>
           ) : (
             <div className="reviews-list">
               {reviews.map((review) => (
                 <div key={review.id} className="review-card">
                   <div className="review-header">
                     <span className="review-sentiment">
-                      {getSentimentEmoji(review.sentiment)} {review.sentiment}
+                      {getSentimentEmoji(review.sentiment)}{" "}
+                      {translateSentimentLabel(review.sentiment)}
                     </span>
                     <span className="review-date">
                       {new Date(review.created_at).toLocaleDateString()}
